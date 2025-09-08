@@ -1,0 +1,123 @@
+#!/bin/env bash
+
+set -eu
+
+arg_day=""
+day=$(date -I)
+journal_path="$HOME/stuff/journal"
+day_file="$journal_path/$(date +"%Y")/$day"
+day_file_bak="/tmp/$day.bak"
+template_path="$journal_path/template"
+
+help() {
+	echo "52 – document your year
+
+Usage:
+    52 <activity> <args>
+    52 <option>
+
+Options:
+    -c, --comment   describe the day
+    -d, --delete    delete a key from today's file
+    -e, --edit      open today's file in an editor
+    -T, --template  edit the template
+    -t, --today     print today's file
+    -u, --undo      return to the previous state before writing"
+	exit 1
+}
+
+if [ $# -eq 0 ]; then
+	help
+fi
+
+touch $day_file
+
+case $1 in
+	"--comment"|"-c")
+		if [ $# -eq 1 ]; then
+			echo "Usage: 52 --comment <comment>"
+			exit 1
+		fi
+
+		cat $day_file > $day_file_bak
+		echo "# $2" > $day_file
+		cat $day_file_bak >> $day_file
+		exit
+		;;
+	"--delete"|"-d")
+		if [ $# -eq 1 ]; then
+			echo "Usage: 52 --delete <key>"
+			exit 1
+		fi
+
+		shift 1
+		for arg in "$@"; do
+			if ! grep -q "$arg" $day_file; then
+				echo "Not found: $arg"
+				exit 1
+			fi
+			sed -i "/$arg/d" $day_file
+			echo "Deleted $arg"
+		done
+
+		exit
+		;;
+	"--edit"|"-e")
+		if [ $# -ge 2 ]; then
+			arg_day="$journal_path/${2:0:4}/$2"
+		else
+			arg_day=$day_file
+		fi
+
+		nvim $arg_day
+		exit
+		;;
+	"--template"|"-T")
+		nvim $template_path
+		exit
+		;;
+	"--today"|"-t")
+		if [ $# -ge 2 ]; then
+			arg_day="$journal_path/${2:0:4}/$2"
+		else
+			arg_day=$day_file
+		fi
+
+		if [ ! -s $arg_day ]; then
+			cat $template_path > $arg_day
+		fi
+		cat $arg_day
+		exit
+		;;
+	"--undo"|"-u")
+		cat $day_file_bak > $day_file
+		echo "Undid last change to '$day_file'"
+		exit
+		;;
+	"-"*)
+		help
+		;;
+esac
+
+if grep -q "^$1\b" $day_file; then
+	cat $day_file > $day_file_bak
+	escaped_1=$(printf '%s\n' "$1" | sed 's/[][\\.^$*]/\\&/g')
+	sed -i "/^$escaped_1/c\\$*" $day_file
+	exit
+fi
+
+printf "$1 is a new activity. Do you want to add it? [Y/n]: "
+read response
+case $response in
+	""|"Y"|"y")
+		cat $day_file > $day_file_bak
+		echo "$@" >> $day_file
+		;;
+	"N"|"n")
+		exit
+		;;
+	*)
+		echo "Invalid response!"
+		exit 1
+		;;
+esac
