@@ -2,12 +2,14 @@
 
 set -eu
 
+EDITOR="nvim"
+JOURNAL_PATH="$HOME/stuff/journal"
+
 arg_day=""
 day=$(date -I)
-journal_path="$HOME/stuff/journal"
-day_file="$journal_path/$(date +"%Y")/$day"
+day_file="$JOURNAL_PATH/$(date +"%Y")/$day"
 day_file_bak="/tmp/$day.bak"
-template_path="$journal_path/template"
+template_path="$JOURNAL_PATH/template"
 
 help() {
 	echo "52 – document your year
@@ -17,12 +19,16 @@ Usage:
     52 <option>
 
 Options:
-    -c, --comment   describe the day
-    -d, --delete    delete a key from today's file
-    -e, --edit      open today's file in an editor
-    -T, --template  edit the template
-    -t, --today     print today's file
-    -u, --undo      return to the previous state before writing"
+    -c, --comment          describe the day
+    -d, --delete           delete a key from today's file
+
+    -e [DATE], --edit      open [DATE]'s file in an editor or today
+                           or today's if no [DATE] supplied
+    -t [DATE], --today     print [DATE]'s file
+                           or today's if no [DATE] supplied
+
+    -T, --template         edit the template
+    -u, --undo             return to the previous state before writing"
 	exit 1
 }
 
@@ -64,21 +70,21 @@ case $1 in
 		;;
 	"--edit"|"-e")
 		if [ $# -ge 2 ]; then
-			arg_day="$journal_path/${2:0:4}/$2"
+			arg_day="$JOURNAL_PATH/${2:0:4}/$2"
 		else
 			arg_day=$day_file
 		fi
 
-		nvim $arg_day
+		$EDITOR "$arg_day"
 		exit
 		;;
 	"--template"|"-T")
-		nvim $template_path
+		$EDITOR "$template_path"
 		exit
 		;;
 	"--today"|"-t")
 		if [ $# -ge 2 ]; then
-			arg_day="$journal_path/${2:0:4}/$2"
+			arg_day="$JOURNAL_PATH/${2:0:4}/$2"
 		else
 			arg_day=$day_file
 		fi
