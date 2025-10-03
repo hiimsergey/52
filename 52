@@ -26,6 +26,8 @@ Options:
                                  or today's if no [DATE] supplied
     -t [YYYY-MM-DD], --today   print [DATE]'s file
                                  or today's if no [DATE] supplied
+                                 or write the template to the respective file
+                                 if it was empty before
 
     -T, --template             edit the template
     -u, --undo                 return to the previous state before writing"
@@ -56,12 +58,14 @@ case $1 in
 
 		shift 1
 		for arg in "$@"; do
-			if ! grep -q "$arg" $day_file; then
-				echo "Not found: $arg"
+			escaped_arg=$(printf '%s\n' "$1" | sed 's/[][\\.^$*]/\\&/g')
+
+			if ! grep -q "$escaped_arg" $day_file; then
+				echo "Not found: $escaped_arg"
 				exit 1
 			fi
-			sed -i "/$arg/d" $day_file
-			echo "Deleted $arg"
+			sed -i "/$escaped_arg/d" $day_file
+			echo "Deleted $escaped_arg"
 		done
 
 		exit
