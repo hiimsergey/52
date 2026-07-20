@@ -12,44 +12,36 @@ day_file_bak="/tmp/$day.bak"
 template_path="$JOURNAL_PATH/template"
 
 help() {
-	echo "52 – document your year
+	echo "52 - document your year
 
 Usage:
-    52 <activity> <args>
-    52 <option>
+    52                       (open today's file in nvim)
+    52 <option>              (see below)
+    52 <activity> <args>     (add activity to today's file)
 
 Options:
-    -c, --comment              describe the day
-    -d, --delete               delete a key from today's file
+    -d, --delete             delete a key from today's file
 
-    -e [YYYY-MM-DD], --edit    open date's file in an editor or today
-                                 or today's if no [DATE] supplied
-    -t [YYYY-MM-DD], --today   print [DATE]'s file
-                                 or today's if no [DATE] supplied
-                                 or write the template to the respective file
-                                 if it was empty before
+    -e [YYYY-MM-DD], --edit  open date's file in an editor or today
+                               or today's if no [DATE] supplied
+    -c [YYYY-MM-DD], --cat   print [DATE]'s file
+                               or today's if no [DATE] supplied
+                               or write the template to the respective file
+                               if it was empty before
 
-    -T, --template             edit the template
-    -u, --undo                 return to the previous state before writing"
+    -t, --template           edit the template
+    -u, --undo               return to the previous state before writing"
 	exit 1
 }
 
-if [ $# -eq 0 ]; then help; fi
+if [ $# -eq 0 ]; then
+	$EDITOR "$day_file"
+	exit
+fi
 
 touch $day_file
 
 case $1 in
-	"--comment"|"-c")
-		if [ $# -eq 1 ]; then
-			echo "Usage: 52 --comment <comment>"
-			exit 1
-		fi
-
-		cat $day_file > $day_file_bak
-		echo "# $2" > $day_file
-		cat $day_file_bak >> $day_file
-		exit
-		;;
 	"--delete"|"-d")
 		if [ $# -eq 1 ]; then
 			echo "Usage: 52 --delete <key>"
@@ -80,11 +72,11 @@ case $1 in
 		$EDITOR "$arg_day"
 		exit
 		;;
-	"--template"|"-T")
+	"--template"|"-t")
 		$EDITOR "$template_path"
 		exit
 		;;
-	"--today"|"-t")
+	"--cat"|"-c")
 		if [ $# -ge 2 ]; then
 			arg_day="$JOURNAL_PATH/${2:0:4}/$2"
 		else

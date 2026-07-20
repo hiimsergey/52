@@ -9,13 +9,12 @@ This script creates a list of activities, chosen by you, each day to fill out, f
 52 foo              # Add foo as an activity you did today
 52 foo bar          # Add the key foo with the value bar to today's stats
 52 -d foo           # Delete the foo key from today's stats
-52 -c [COMMENT]     # Add a comment for today
 
-52 -t [DATE]        # Print [DATE]'s stats (or today's if no [DATE] supplied)
+52 -c [DATE]        # Print [DATE]'s stats (or today's if no [DATE] supplied)
 52 -e [DATE]        # Edit [DATE]'s stats (or today's if no [DATE] supplied)
 
 52 -u               # Undo the latest change
-52 -T               # Edit the template
+52 -t               # Edit the template
 ```
 
 ## Configuration
